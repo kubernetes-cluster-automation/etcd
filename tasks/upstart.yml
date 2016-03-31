@@ -1,0 +1,14 @@
+---
+
+- name: Render etcd upstart defaults
+  become: yes
+  template: src="{{ item }}.j2" dest="/etc/default/{{ item }}"
+  with_items:
+  - etcd
+  when: is_etcd_host == true
+
+- name: Copy etcd conf
+  copy: src="{{ item }}.conf" dest="/etc/init/{{ item }}.conf"
+  with_items:
+  - etcd
+  when: is_etcd_host == true

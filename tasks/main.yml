@@ -1,0 +1,52 @@
+---
+
+- name: add internal apt repo
+  become: yes
+  apt_repository: repo="deb http://{{ apt_repo_host }}/deb/ amd64/" state=present
+
+- name: Update apt cache
+  apt: update_cache=yes
+  failed_when: false
+
+# Note!  Must be done before invoking sytemd.yml or upstart.yml
+- name: Set if this host is an etcd host fact
+  set_fact:
+      is_etcd_host: true
+  when: etcd_hosts is defined and ansible_hostname in etcd_hosts
+
+- name: Set etcd host to self if host in etcd_hosts
+  set_fact:
+      etcd_host: "{{ ansible_hostname }}"
+  when: is_etcd_host == true
+
+- name: Set etcd environment varaibles
+  include: etcd-environment.yml
+
+- name: Install etcd
+  become: yes
+  apt: pkg=etcd state="installed" force="yes"
+
+- name: check if systemd available
+  stat: path=/bin/systemd
+  register: systemd
+
+- name: include systemd plays
+  become: yes
+  include: systemd.yml
+  when: is_etcd_host == true and systemd.stat.exists is defined and systemd.stat.exists
+
+- name: incude upstart plays
+  become: yes
+  include: upstart.yml
+  when: is_etcd_host == true and systemd.stat.exists is not defined or not systemd.stat.exists
+
+- name: Stop etcd
+  become: yes
+  service: name=etcd state=stopped
+  when: is_etcd_host == true and stem_create is defined
+
+- name: Start etcd
+  become: yes
+  service: name=etcd state=restarted
+  when: is_etcd_host == true and stem_create is not defined
+

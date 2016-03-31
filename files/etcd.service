@@ -1,0 +1,20 @@
+[Unit]
+Description=Etcd configuration service
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+EnvironmentFile=/etc/environment
+ExecStart=/opt/bin/etcd --name ${ETCD_LOCAL_NAME} \
+  --data-dir=/var/data/etcd \
+  -initial-advertise-peer-urls http://${ETCD_HOST}:${ETCD_SVR_PORT} \
+  -listen-peer-urls http://${ETCD_HOST}:${ETCD_SVR_PORT} \
+  -listen-client-urls \
+  http://${ETCD_HOST}:${ETCD_CLIENT_PORT},http://127.0.0.1:${ETCD_CLIENT_PORT} \
+  -advertise-client-urls http://${ETCD_HOST}:${ETCD_CLIENT_PORT} \
+  -initial-cluster-token ${ETCD_CLUSTER_TOKEN} \
+  -initial-cluster ${ETCD_INITIAL_CLUSTER} \
+  -initial-cluster-state ${ETCD_INITIAL_CLUSTER_STATE}
+
+[Install]
+WantedBy=multi-user.target

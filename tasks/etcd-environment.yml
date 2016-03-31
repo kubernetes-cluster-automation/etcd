@@ -1,0 +1,23 @@
+---
+
+- name: Set cluster peer fact for etcd cluster
+  set_fact:
+      etcd_host_list: "{{ etcd_hosts }}"
+  when: etcd_hosts is defined
+
+- name: Set group etcd initial cluster fact
+  set_fact: etcd_initial_cluster={{item}}
+  with_items: "{% for host in etcd_host_list %}infra{{loop.index}}=http://{{host}}:{{etcd_svr_port}}{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: Set group etcd peers fact
+  set_fact: etcd_peers={{item}}
+  with_items: "{% for host in etcd_host_list %}http://{{host}}:{{etcd_client_port}}{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: Set etcd cluster name fact
+  set_fact: etcd_local_name="{{ item }}"
+  with_items: "{% for host in etcd_host_list %}{% if host == ansible_hostname %}infra{{loop.index}}{% endif %}{% endfor %}"
+
+- name: Add etcd environment variables to /etc/environment
+  become: yes
+  lineinfile: dest='/etc/environment' line="{{ item.key }}={{ item.value }}" state=present create=yes
+  with_dict: "{{ etcd_env_vars }}"

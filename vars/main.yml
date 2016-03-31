@@ -1,0 +1,18 @@
+---
+is_etcd_host: false
+etcd_host_list:
+  - "{{ etcd_host }}"
+
+etcd_env_vars:
+  ETCD_NAME: "{{ etcd_name }}"
+  ETCD_LOCAL_NAME: "{{ etcd_local_name }}"
+  ETCD_HOST: "{{ etcd_host }}"
+  ETCD_CLIENT_PORT: "{{ etcd_client_port }}"
+  ETCD_SVR_PORT: "{{ etcd_svr_port }}"
+# Can't use ETCD_PEERS due to compat issue with old use of this env var
+  EPEERS: "{{ etcd_peers }}"
+  ETCD_CLUSTER_TOKEN: "{{ etcd_cluster_token }}"
+  ETCD_INITIAL_CLUSTER: "{{ etcd_initial_cluster }}"
+  ETCD_DATADIR: /var/data/etcd
+#  ETCD_AUTHORITY: "{{ etcd_host }}:{{ etcd_client_port }}"
+  ETCD_INITIAL_CLUSTER_STATE: new
