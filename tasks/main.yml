@@ -26,19 +26,15 @@
   become: yes
   apt: pkg=etcd state="installed" force="yes"
 
-- name: check if systemd available
-  stat: path=/bin/systemd
-  register: systemd
-
 - name: include systemd plays
   become: yes
   include: systemd.yml
-  when: is_etcd_host == true and systemd.stat.exists is defined and systemd.stat.exists
+  when: is_etcd_host == true and ansible_service_mgr == 'systemd' 
 
 - name: incude upstart plays
   become: yes
   include: upstart.yml
-  when: is_etcd_host == true and systemd.stat.exists is not defined or not systemd.stat.exists
+  when: is_etcd_host == true and ansible_service_mgr == 'upstart' 
 
 - name: Stop etcd
   become: yes
